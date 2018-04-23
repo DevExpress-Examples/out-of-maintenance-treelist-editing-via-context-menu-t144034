@@ -1,0 +1,39 @@
+@{
+    var treeList = Html.DevExpress().TreeList(settings => {
+        settings.Name = "TreeList";
+        settings.CallbackRouteValues = new { Controller = "Home", Action = "TreeListPartial" };
+
+        settings.KeyFieldName = "EmployeeID";
+        settings.ParentFieldName = "SupervisorID";
+
+        settings.Columns.Add("FirstName");
+        settings.Columns.Add("MiddleName");
+        settings.Columns.Add("LastName");
+        settings.Columns.Add("Title");
+
+        settings.SettingsEditing.AddNewNodeRouteValues = new { Controller = "Home", Action = "TreeListPartialAddNew" };
+        settings.SettingsEditing.UpdateNodeRouteValues = new { Controller = "Home", Action = "TreeListPartialUpdate" };
+        settings.SettingsEditing.NodeDragDropRouteValues = new { Controller = "Home", Action = "TreeListPartialMove" };
+        settings.SettingsEditing.DeleteNodeRouteValues = new { Controller = "Home", Action = "TreeListPartialDelete" };
+
+        settings.CommandColumn.Visible = true;
+
+        settings.HtmlRowPrepared = (s, e) => {
+            MVCxTreeList tree = (MVCxTreeList)s;
+            if (e.RowKind == TreeListRowKind.Data) {
+                TreeListNode node = tree.FindNodeByKeyValue(e.NodeKey);
+                if (node != null && node.ParentNode != null) {
+                    e.Row.Attributes["ParentNodeKey"] = node.ParentNode.Key;
+                }
+            }
+        };
+
+        settings.ClientSideEvents.ContextMenu = "OnContextMenu";
+    });
+
+    if (ViewData["EditNodeError"] != null) {
+        treeList.SetEditErrorText((string)ViewData["EditNodeError"]);
+    }
+}
+
+@treeList.Bind(Model).GetHtml()
